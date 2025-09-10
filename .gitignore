@@ -1,33 +1,20 @@
-README.md
-target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+# Maven target 目录
+/target/
+/*/target/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+# IDEA
+.idea/
 *.iml
-*.ipr
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+# OS
+.DS_Store
+Thumbs.db
 
-### VS Code ###
-.vscode/
+# 日志
+*.log
+
+# 临时文件
+*.class
+*.jar
+*.war
+*.ear
