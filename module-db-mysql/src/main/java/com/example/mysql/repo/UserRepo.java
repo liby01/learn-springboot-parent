@@ -9,6 +9,6 @@ public class UserRepo {
 
     public UserRepo(JdbcTemplate jdbc) { this.jdbc = jdbc; }
     public List<Map<String,Object>> list() {
-        return jdbc.queryForList("select id,name from t_user order by id");
+        return jdbc.queryForList("select id,name as '姓名' from t_user order by id");
     }
 }
