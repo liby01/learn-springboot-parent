@@ -1,0 +1,49 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mybatisplus.mapper.UserMapper">
+
+    <select id="selectByNameLike" resultType="com.example.mybatisplus.model.User">
+        select * from t_user where name like concat('%', #{name}, '%')
+    </select>
+
+    <!-- 映射 User（包含一个订单集合 orders） -->
+    <resultMap id="UserWithOrdersMap" type="com.example.mybatisplus.model.User">
+        <id     column="u_id"    property="id"/>
+        <result column="u_name"  property="name"/>
+        <collection property="orders" ofType="com.example.mybatisplus.model.Order">
+            <id     column="o_id"        property="id"/>
+            <result column="o_user_id"   property="userId"/>
+            <result column="o_amount"    property="amount"/>
+            <result column="o_created_at" property="createdAt"/>
+        </collection>
+    </resultMap>
+
+    <!-- 单用户 + 订单列表 -->
+    <select id="selectUserWithOrders" parameterType="long" resultMap="UserWithOrdersMap">
+        SELECT
+            u.id  AS u_id,
+            u.name AS u_name,
+            o.id  AS o_id,
+            o.user_id AS o_user_id,
+            o.amount AS o_amount,
+            o.created_at AS o_created_at
+        FROM t_user u
+                 LEFT JOIN t_order o ON u.id = o.user_id
+        WHERE u.id = #{userId}
+        ORDER BY o.created_at DESC
+    </select>
+
+    <!-- 所有用户 + 订单列表 -->
+    <select id="selectAllUsersWithOrders" resultMap="UserWithOrdersMap">
+        SELECT
+            u.id  AS u_id,
+            u.name AS u_name,
+            o.id  AS o_id,
+            o.user_id AS o_user_id,
+            o.amount AS o_amount,
+            o.created_at AS o_created_at
+        FROM t_user u
+                 LEFT JOIN t_order o ON u.id = o.user_id
+        ORDER BY u.id ASC, o.created_at DESC
+    </select>
+</mapper>
