@@ -3,10 +3,16 @@ server:
 
 spring:
   datasource:
+    # 建议保留 createDatabaseIfNotExist，首次启动自动建库
     url: jdbc:mysql://127.0.0.1:3306/learn?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+    # 如有 schema.sql / data.sql，启用自动执行；没有就删掉这段
   sql:
     init:
       mode: always
@@ -22,4 +28,4 @@ spring:
 
 logging:
   level:
-    org.springframework.boot.devtools: DEBUG
+    org.springframework.boot.devtools: DEBUG # 打印 SQL 绑定参数可改成 DEBUG
