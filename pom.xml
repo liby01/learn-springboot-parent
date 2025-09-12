@@ -16,6 +16,7 @@
         <module>module-mybatis</module>
         <module>module-mybatis-plus</module>
         <module>module-admin</module> <!-- 新增后台管理模块 -->
+        <module>module-config-demo</module>
     </modules>
 
     <!-- 继承 Spring Boot 父 -->

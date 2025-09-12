@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active: prod
+
+demo:  # 绑定到 DemoProps  # 这个前缀对应 @ConfigurationProperties 的 prefix 值
+  site-name: "Learning Spring Boot"  # 映射到 siteName 字段
+  owner: "you"                      # 映射到 owner 字段
+
+feature:
+  echo:
+    enabled: true   # 条件装配开关：true 有 EchoService；false 则没有
