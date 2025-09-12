@@ -15,6 +15,7 @@
         <module>module-db-mysql</module>
         <module>module-mybatis</module>
         <module>module-mybatis-plus</module>
+        <module>module-admin</module> <!-- 新增后台管理模块 -->
     </modules>
 
     <!-- 继承 Spring Boot 父 -->
