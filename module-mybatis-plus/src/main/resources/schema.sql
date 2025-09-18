@@ -2,7 +2,8 @@
 drop table if exists t_user;
 create table t_user (
                         id   bigint primary key auto_increment,
-                        name varchar(64) not null
+                        name varchar(64) not null,
+                        password varchar(255) not null
 );
 
 -- 订单表

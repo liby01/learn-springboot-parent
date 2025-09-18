@@ -3,25 +3,25 @@
 <mapper namespace="com.example.mybatis.mapper.UserMapper">
     <!-- 新增用户 -->
     <insert id="insert" parameterType="com.example.mybatis.model.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO t_user (name)
-        VALUES (#{name})
+        INSERT INTO t_user (name,password)
+        VALUES (#{name},#{password})
     </insert>
     <update id="update" parameterType="com.example.mybatis.model.User">
         UPDATE t_user
-        SET name = #{name}
+        SET password = #{password}
         WHERE id = #{id}
     </update>
     <delete id="deleteById" parameterType="long">
         DELETE FROM t_user WHERE id = #{id}
     </delete>
     <select id="selectAll" resultType="com.example.mybatis.model.User">
-        select id, name
+        select id, name,password
         from t_user
         order by id
     </select>
 
     <select id="selectById" resultType="com.example.mybatis.model.User">
-        select id, name
+        select id, name,password
         from t_user
         where id =#{id}
     </select>

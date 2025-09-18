@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>MyBatis 前后端交互 Demo</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        body { font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin: 24px; }
+        h1 { margin-bottom: 8px; }
+        .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+        input, button { padding: 8px 12px; font-size: 14px; }
+        table { border-collapse: collapse; margin-top: 16px; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        tr:nth-child(even){ background:#fafafa; }
+        .muted { color:#777; font-size: 12px; }
+        .danger { color: #c0392b; }
+    </style>
+</head>
+<body>
+<h1>用户管理（MyBatis Demo）</h1>
+<div class="muted">后端：Spring Boot + MyBatis（端口默认 8082）</div>
+
+<h3>新增用户</h3>
+<form id="addForm" onsubmit="return submitAddForm(event)">
+    <div class="row">
+        <input name="name" placeholder="用户名，如 Alice" required />
+        <input name="password" type="password" placeholder="密码" required />
+        <button type="submit">提交</button>
+    </div>
+</form>
+
+<!-- 更新 -->
+<h3>修改密码</h3>
+<div class="row">
+    <input id="updId" placeholder="用户ID，如 1" />
+    <input id="updPassword" placeholder="新密码，如 Alice2" />
+    <button onclick="updateUser()">修改</button>
+</div>
+
+<!-- 列表 -->
+<h3 style="margin:0">用户列表</h3>
+<div class="row">
+    <input id="searchInput" placeholder="按用户名搜索，如 Alice" onkeydown="if(event.key==='Enter'){doSearch()}"/>
+    <button onclick="doSearch()">搜索</button>
+    <button onclick="clearSearch()">清空</button>
+    <button onclick="loadUsers()">刷新</button>
+</div>
+<table>
+    <thead><tr><th>ID</th><th>用户名</th><th>密码</th><th>操作</th></tr></thead>
+    <tbody id="tbody"></tbody>
+</table>
+<!--分页-->
+<div class="row" style="align-items:center; margin-top:16px;">
+    <button onclick="prevPage()">上一页</button>
+    <span id="pageInfo"></span>
+    <button onclick="nextPage()">下一页</button>
+</div>
+
+<script>
+    const apiBase = ''; // 与后端同域部署时留空；若前端独立端口，改为 'http://localhost:8082'
+
+    // async function loadUsers() {
+    //     const res = await fetch(apiBase + '/users/all');
+    //     const list = await res.json();
+    //     const tb = document.getElementById('tbody');
+    //     tb.innerHTML = '';
+    //     list.forEach(u => {
+    //         const tr = document.createElement('tr');
+    //         tr.innerHTML = `
+    //       <td>${u.id}</td>
+    //       <td>${u.name}</td>
+    //       <td>
+    //         <button onclick="delUser(${u.id})" class="danger">删除</button>
+    //       </td>`;
+    //         tb.appendChild(tr);
+    //     });
+    // }
+
+    async function submitAddForm(e) {
+        e.preventDefault();
+        const form = document.getElementById('addForm');
+        const formData = new FormData(form);
+
+        // 转 JSON
+        const payload = {
+            name: formData.get('name'),
+            password: formData.get('password')
+        };
+
+        const res = await fetch(apiBase + 'users/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            return alert('新增失败');
+        }
+        form.reset();
+        await loadUsers();
+    }
+
+    async function updateUser() {
+        const id = document.getElementById('updId').value.trim();
+        const password = document.getElementById('updPassword').value.trim();
+        if (!id || !password) return alert('请输入 ID 和新用户名');
+        const res = await fetch(apiBase + '/users/' + encodeURIComponent(id), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify({ password })
+        });
+        if (!res.ok) return alert('修改失败');
+        document.getElementById('updId').value = '';
+        document.getElementById('updPassword').value = '';
+        await loadUsers();
+    }
+
+    async function delUser(id) {
+        if (!confirm('确认删除用户 ' + id + ' ?')) return;
+        const res = await fetch(apiBase + '/users/' + encodeURIComponent(id), { method: 'DELETE' });
+        if (!res.ok) return alert('删除失败');
+        await loadUsers();
+    }
+
+    // 分页
+    let currentPage = 1;
+    let pageSize = 5;
+    let totalCount = 0;
+    let totalPages = 0;
+    let currentQuery = '';  // 搜索关键字
+
+    async function loadUsers() {
+        // 统计总数（带关键字）
+        const countRes = await fetch(apiBase + '/users/page/count' + buildQuery({ q: currentQuery }));
+        totalCount = await countRes.json();
+        totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        // 获取当前页数据（带关键字）
+        const listRes = await fetch(apiBase + '/users/page' + buildQuery({ page: currentPage, size: pageSize, q: currentQuery }));
+        const list = await listRes.json();
+
+        // 渲染表格
+        const tb = document.getElementById('tbody');
+        tb.innerHTML = '';
+        list.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+      <td>${u.id}</td>
+      <td>${u.name}</td>
+      <td>${u.password}</td>
+      <td><button onclick="delUser(${u.id})" class="danger">删除</button></td>`;
+            tb.appendChild(tr);
+        });
+
+        // 更新分页信息
+        document.getElementById('pageInfo').innerText = `第 ${currentPage} / ${totalPages} 页，总数 ${totalCount}`;
+    }
+
+    function buildQuery(params) {
+        const esc = encodeURIComponent;
+        const pairs = Object.entries(params)
+            .filter(([,v]) => v !== undefined && v !== null && String(v).trim() !== '')
+            .map(([k,v]) => `${esc(k)}=${esc(v)}`);
+        return pairs.length ? ('?' + pairs.join('&')) : '';
+    }
+
+    function prevPage() { if (currentPage > 1) { currentPage--; loadUsers(); } }
+    function nextPage() { if (currentPage < totalPages) { currentPage++; loadUsers(); } }
+
+    function doSearch() {
+        const val = document.getElementById('searchInput').value.trim();
+        currentQuery = val;
+        currentPage = 1;    // 搜索重置到第1页
+        loadUsers();
+    }
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        currentQuery = '';
+        currentPage = 1;
+        loadUsers();
+    }
+    // 初次加载
+    loadUsers();
+</script>
+</body>
+</html>

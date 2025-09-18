@@ -1,4 +1,4 @@
-insert into t_user(name)
-values ('Alice'),
-       ('Bob'),
-       ('Carol');
+insert into t_user(name,password)
+values ('Alice','123'),
+       ('Bob','123'),
+       ('Carol','123');

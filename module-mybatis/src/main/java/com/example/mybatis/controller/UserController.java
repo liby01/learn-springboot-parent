@@ -1,5 +1,6 @@
 package com.example.mybatis.controller;
 
+import com.example.mybatis.mapper.UserMapper;
 import com.example.mybatis.model.User;
 import com.example.mybatis.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +13,11 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    private final UserMapper userMapper;
+
+    public UserController(UserService userService,UserMapper userMapper) {
         this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     @GetMapping("/all")
@@ -42,5 +46,18 @@ public class UserController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         userService.deleteById(id);
+    }
+
+    @GetMapping("/page")
+    public List<User> list(@RequestParam(defaultValue = "1") int page,
+                           @RequestParam(defaultValue = "5") int size,
+                           @RequestParam(required = false) String q) {
+        int offset = (page - 1) * size;
+        return userMapper.selectPage(offset, size, q);
+    }
+
+    @GetMapping("/page/count")
+    public int count(@RequestParam(required = false) String q) {
+        return userMapper.countByKeyword(q);
     }
 }
